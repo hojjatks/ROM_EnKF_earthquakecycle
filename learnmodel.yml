@@ -1,0 +1,19 @@
+name: learnmodel
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - scikit-learn
+  - pytorch
+  - numpy
+  - pandas
+  - jupyter
+  - ipykernel
+  - tqdm
+  - matplotlib
+  - scipy
+  - seaborn
+  - h5py
+  - opencv
+prefix: /home/hojjat/anaconda3/envs/learnmodel 

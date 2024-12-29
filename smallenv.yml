@@ -1,0 +1,14 @@
+name: smallenv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - numpy
+  - pandas
+  - jupyter
+  - ipykernel
+  - matplotlib
+  - scipy
+  - seaborn
+prefix: /home/hojjat/anaconda3/envs/smallenv
