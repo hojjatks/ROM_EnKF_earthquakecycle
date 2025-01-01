@@ -5,11 +5,9 @@ import numpy as np
 import cte
 import sys
 import matplotlib.pyplot as plt
-
-sys.path.append('/home/hojjat/qdyn-read-only/src')  # For pyqdyn
-sys.path.append('/home/hojjat/qdyn-read-only/utils/post_processing') # For plot_functions
+sys.path.append('/central/groups/astuart/hkaveh/QDYN/qdyn-read-only/src')  # For pyqdyn
 from pyqdyn import qdyn
-from ProcessFunctions import ApplyPODStateSpace,GrabData,PltPODModesVorthetav2,SaveAsPickle,GenRandom_ai,FindInitFromAi,ApplyPODV,PltPODmodesV,ApplyPODtheta
+from ProcessFunctions import ApplyPODStateSpace,GrabData,PltPODModesVorthetav2,SaveAsPickle,GenRandom_ai,FindInitFromAi,ApplyPODV,PltPODmodesV,ApplyPODtheta,Grab_SaveData
 import pickle
 
 #%%
@@ -159,6 +157,8 @@ def forwardmodel(a_VW,b_VW,dc,W_asp,L,L_asp,stringadditional,T_final,u_init,Spec
 
 
 #%%
+sample=False # If true, it generates random initial conditions and solve the equations for those initial conditions
+CalPOD=False # If true, it calculates the POD modes
 a_VW,b_VW,dc=[0.004,0.014,0.045]
 W_asp=25000
 POD_on_V=0
@@ -169,8 +169,10 @@ T_final=600
 Specifyinit=False
 u_init=0
 p=forwardmodel(a_VW,b_VW,dc,W_asp,L,L_asp,stringadditional,T_final,u_init,Specifyinit)
-direct='MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)+".pickle"
-# SaveAsPickle(p,direct)
+direct='/central/groups/astuart/hkaveh/Data/LearnROM/transfer/MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)
+#SaveAsPickle(p,direct)
+Grab_SaveData(p,direct)
+
 #%% Here I save the data:
 # 
 savegeom=0
@@ -209,33 +211,34 @@ V_ox_max=np.max(V_ox,axis=(1,2))
 #%% Plotting the POD modes
 T_filter=100
 V_thresh=10
-if POD_on_V==0:
-    U,S,VT,q_bar,Nz,Nx,x_ox,z_ox,vmin,vmax,V_ox_filtered,Nt2,t_ox_filtered,Theta_filtered,Nz=ApplyPODStateSpace(p,T_filter,V_thresh)
-    direct='MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)
-    #np.savez_compressed(direct+'.npz', U=U, S=S, VT=VT,q_bar=q_bar)
+if CalPOD==True:
+    if POD_on_V==0:
+        U,S,VT,q_bar,Nz,Nx,x_ox,z_ox,vmin,vmax,V_ox_filtered,Nt2,t_ox_filtered,Theta_filtered,Nz=ApplyPODStateSpace(p,T_filter,V_thresh)
+        direct='MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)
+        #np.savez_compressed(direct+'.npz', U=U, S=S, VT=VT,q_bar=q_bar)
 
-else:
-    U,S,VT,P_bar,Nz,Nx,x_ox,z_ox,vmin,vmax,V_ox_filtered,Nt2,t_ox_filtered,Nz=ApplyPODV(p,T_filter)
-    direct='MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)+'PODonlyonV'
-    # np.savez_compressed(direct+'.npz', U=U, S=S, VT=VT,q_bar=P_bar)
-    
-    U,S,VT,P_bar,Nz,Nx,x_ox,z_ox,vmin,vmax,Theta_ox_filtered,Nt2,t_ox_filtered,Nz=ApplyPODtheta(p,T_filter)
-    direct='MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)+'PODonlyontheta'
-    # np.savez_compressed(direct+'.npz', U=U, S=S, VT=VT,q_bar=P_bar)    
+    else:
+        U,S,VT,P_bar,Nz,Nx,x_ox,z_ox,vmin,vmax,V_ox_filtered,Nt2,t_ox_filtered,Nz=ApplyPODV(p,T_filter)
+        direct='MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)+'PODonlyonV'
+        # np.savez_compressed(direct+'.npz', U=U, S=S, VT=VT,q_bar=P_bar)
+        
+        U,S,VT,P_bar,Nz,Nx,x_ox,z_ox,vmin,vmax,Theta_ox_filtered,Nt2,t_ox_filtered,Nz=ApplyPODtheta(p,T_filter)
+        direct='MainSimulation_Tf'+str(T_final)+"Nt="+str(cte.Ntout)+'PODonlyontheta'
+        # np.savez_compressed(direct+'.npz', U=U, S=S, VT=VT,q_bar=P_bar)    
 
-# ATTTENTION, For future, try to save number of time snapshots as well, because to find the variance you need to divide by Nt 
-# Actually you dont really need it, the number of snapshots are the number of rows(or columns) of VT
+    # ATTTENTION, For future, try to save number of time snapshots as well, because to find the variance you need to divide by Nt 
+    # Actually you dont really need it, the number of snapshots are the number of rows(or columns) of VT
 
 #%%
-if POD_on_V==0:
-    NMods=8
-    V_or_Theta="V"
-    PltPODModesVorthetav2(U,q_bar,Nz,Nx,NMods,V_or_Theta,V_thresh,x_ox,z_ox)
-else:
-    NMods=8
+    if POD_on_V==0:
+        NMods=8
+        V_or_Theta="V"
+        PltPODModesVorthetav2(U,q_bar,Nz,Nx,NMods,V_or_Theta,V_thresh,x_ox,z_ox)
+    else:
+        NMods=8
 
-    PltPODmodesV(U,P_bar,NMods,Nz,Nx,x_ox,z_ox)
-        
+        PltPODmodesV(U,P_bar,NMods,Nz,Nx,x_ox,z_ox)
+            
 
 #%%
 Num_samples=220
@@ -243,21 +246,21 @@ N_m=30
 coeff=2
 Specifyinit=True
 T_final_samples=250 #300
-
-for index in range(130):
-    print('Simulating random initial condition number : ' +str(index))
-    ai=GenRandom_ai(U,S,N_m,Nt2,coeff)
-    u_init=FindInitFromAi(ai,U,N_m,q_bar)
-    p=forwardmodel(a_VW,b_VW,dc,W_asp,L,L_asp,stringadditional,T_final_samples,u_init,Specifyinit)
-    direct='./Data/SampleSimulation_Tf'+str(T_final_samples)+"Nt="+str(cte.Ntout)+"N_m"+str(N_m)+"coeff"+str(coeff)+"number"+str(index)
-    # You only need time, V, theta, so only saving those:
-    x_ox=p.ox["x"].unique()
-    z_ox=p.ox["z"].unique()
-    Nt=len(p.ox["v"])//(len(x_ox)*len(z_ox)) # Number of Snapshots
-    t_ox=p.ox["t"].values.reshape((Nt,len(z_ox),len(x_ox)))
-    V_ox=p.ox["v"].values.reshape((Nt,len(z_ox),len(x_ox)))
-    theta_ox=p.ox["theta"].values.reshape((Nt,len(z_ox),len(x_ox)))
-    np.savez_compressed(direct+'.npz', array1=V_ox, array2=theta_ox, array3=t_ox)
+if sample==True:
+    for index in range(130):
+        print('Simulating random initial condition number : ' +str(index))
+        ai=GenRandom_ai(U,S,N_m,Nt2,coeff)
+        u_init=FindInitFromAi(ai,U,N_m,q_bar)
+        p=forwardmodel(a_VW,b_VW,dc,W_asp,L,L_asp,stringadditional,T_final_samples,u_init,Specifyinit)
+        direct='./Data/SampleSimulation_Tf'+str(T_final_samples)+"Nt="+str(cte.Ntout)+"N_m"+str(N_m)+"coeff"+str(coeff)+"number"+str(index)
+        # You only need time, V, theta, so only saving those:
+        x_ox=p.ox["x"].unique()
+        z_ox=p.ox["z"].unique()
+        Nt=len(p.ox["v"])//(len(x_ox)*len(z_ox)) # Number of Snapshots
+        t_ox=p.ox["t"].values.reshape((Nt,len(z_ox),len(x_ox)))
+        V_ox=p.ox["v"].values.reshape((Nt,len(z_ox),len(x_ox)))
+        theta_ox=p.ox["theta"].values.reshape((Nt,len(z_ox),len(x_ox)))
+        np.savez_compressed(direct+'.npz', array1=V_ox, array2=theta_ox, array3=t_ox)
 
 
 
