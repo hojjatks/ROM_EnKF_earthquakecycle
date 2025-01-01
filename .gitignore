@@ -1,2 +1,7 @@
 *.pickle
 *.npz
+*.in
+output_*
+*.sh
+slurm*
+*.pyc

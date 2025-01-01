@@ -15,7 +15,7 @@ import matplotlib.font_manager as fm
 import matplotlib.patches as patches
 
 from matplotlib.patches import Rectangle 
-import cte
+#import cte
 #%% Plot_a_minus_b
 
 def Sigmoid(x):
@@ -1170,7 +1170,27 @@ def CanvasAnimOneInstance(directory,p,L,W,t_yr,taw,T_filter):
         ticks.set_fontname(custom_font)  
         ticks.set_fontsize(FontSize)    
     plt.show()
+
+def Grab_SaveData(p,direct):
+    x_ox=p.ox["x"].unique()-320e3/2 # Centering
+    z_ox=p.ox["z"].unique() 
+    Nt=len(p.ox["v"])//(len(x_ox)*len(z_ox))
+    t_ox=p.ox["t"].values.reshape((Nt,len(z_ox),len(x_ox)))
+    V_ox=p.ox["v"].values.reshape((Nt,len(z_ox),len(x_ox)))
+    theta_ox=p.ox["theta"].values.reshape((Nt,len(z_ox),len(x_ox)))
+    stress=p.ox["tau"].values.reshape((Nt,len(z_ox),len(x_ox)))
+    # saving using numpy
+    pot_ot=np.asarray(p.ot[0]["pot_rate"])
+    vmax_ot = np.asarray(p.ot_vmax["v"])
+    t_ot = np.asarray(p.ot_vmax["t"])
+    np.savez(direct,z_ox=z_ox,x_ox=x_ox,t_ox=t_ox,V_ox=V_ox,theta_ox=theta_ox,stress=stress,pot_ot=pot_ot,vmax_ot=vmax_ot,t_ot=t_ot)
     
+    
+    
+    
+    return 
+
+
 def GrabData(p,L,W,t_yr):
     vmax=-1 # max lim for the fault plot
     vmin=-9#  min lim for the fault plot
@@ -1639,7 +1659,43 @@ def FindTevents(V_isevent,counter,index2,index3,t_ox_filtered,t_yr):
     
             
             
-            
+def FindMw_v2(pot_ot,vmax_ot,t_ot,t_yr,T_filter,V_thresh,mu):
+    # the difference between this function and FindMw is that this function does not need the p as input but only timesreies
+    PotRate=pot_ot
+    Vmax = vmax_ot
+    Time = t_ot
+    
+    
+    
+    TimetoRemove=T_filter*t_yr
+    NumtoRemove=(Time<TimetoRemove).sum()
+    
+    PotRate=PotRate[NumtoRemove:]
+    Vmax=Vmax[NumtoRemove:]
+    Time=Time[NumtoRemove:]
+    
+    flag=0
+    Mw=np.array([])
+    T1=np.array([]) # it is the time of when the earthquakes nucleate
+    T2=np.array([]) # it is the time of when the earthquake stops
+    # ax= fig.add_subplot()
+    # ax.plot(Time/t_yr,Vmax)
+    
+    for i in range(Vmax.size):
+        if flag==0 and Vmax[i]>V_thresh:
+            flag=1
+            index1=i
+            # ax.axvline(Time[i]/t_yr,linestyle='dotted',color='black') 
+            T1=np.append(T1,Time[i])
+        if flag==1 and Vmax[i]<V_thresh:
+            flag=0
+            index2=i
+            IntPotRate=integrate.cumtrapz(PotRate[index1:index2+1],Time[index1:index2+1])
+            Integration=IntPotRate[-1]
+            M0=Integration*mu
+            Mw=np.append(Mw,(2/3)*math.log10(M0)-6)
+            T2=np.append(T2,Time[i])
+    return Mw,T1,T2 
 
 
 
