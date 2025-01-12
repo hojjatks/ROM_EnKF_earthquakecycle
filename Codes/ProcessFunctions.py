@@ -4,7 +4,7 @@ import pickle
 import matplotlib
 import seaborn as sns
 from matplotlib.cm import get_cmap
-
+import cte
 import matplotlib.animation as manimation
 from scipy import interpolate
 from scipy import integrate
@@ -2309,6 +2309,49 @@ def Mw_AreaScalingPlt(p,L,W,t_yr,T_filter,V_thresh):
     return
 
 #%% POD Function
+def ApplyPODV_2D(v,theta,t,Nx,T_filter,v_or_theta,downsampleratio,N_snapshots):
+
+    t_yr=cte.t_yr   
+    Nt=int(t.shape[0]/Nx)
+
+# remove first T_filter years from V_ox, slip and t
+    t=t.reshape((Nt,Nx)) 
+    
+    v=v.reshape((Nt,Nx))
+    theta=theta.reshape((Nt,Nx))
+    
+    V_ox_filtered=v[t[:,0]>T_filter*t_yr,:]
+    t_ox_filtered=t[t[:,0]>T_filter*t_yr]
+    theta_ox_filtered=theta[t[:,0]>T_filter*t_yr,:]
+    
+    
+    
+    # downsampling data in time
+    V_ox_filtered=V_ox_filtered[::downsampleratio,:]
+    t_ox_filtered=t_ox_filtered[::downsampleratio]
+    theta_ox_filtered=theta_ox_filtered[::downsampleratio,:]
+    
+    V_ox_filtered=np.log10(V_ox_filtered)   # Finding the Logarithm of Velocity
+    theta_ox_filtered=np.log10(theta_ox_filtered)
+
+    Nt2=V_ox_filtered.shape[0]
+    Nx=V_ox_filtered.shape[1]
+    if v_or_theta=="v":
+        P=[V_ox_filtered[i,:].flatten() for i in range(Nt2)] # Stack of all velocities
+    elif v_or_theta=="theta":
+        P=[theta_ox_filtered[i,:].flatten() for i in range(Nt2)] # Stack of all velocities
+    p=0
+    P=np.asarray(P).T     
+    # only considering firstt N_snapshots in P
+    P=P[:,:N_snapshots]
+    P_bar=np.mean(P,axis=1)
+    P_bar=P_bar.reshape(Nx,1)
+    P=P-P_bar
+    U,S,VT=np.linalg.svd(P,full_matrices='false')   
+    S=np.diag(S)
+    return U,S,VT,P_bar,Nx,V_ox_filtered,theta_ox_filtered,Nt2,t_ox_filtered
+
+
 
 def FindPODModesV(p,L,W,t_yr,T_filter):
     t_ox,x_ox,z_ox,V_ox,vmin,vmax,ax1_xlim,ax1_ylim,_=GrabData(p,L,W,t_yr)
