@@ -103,8 +103,8 @@ def forwardmodel(a_VW,b_VW,dc,W_asp,L,L_asp,stringadditional,T_final,u_init,Spec
 
     B=np.ones((Nw,Nx))*cte.b_VS  
     A=np.ones((Nw,Nx))*cte.a_VS
-    A[Nw//2-nw//2:Nw//2+nw//2,Nx//2-nx//2:Nx//2+nx//2]=a_VW  # a=0.004 in all of the pickle files whose a's are not specified.
-    B[Nw//2-nw//2:Nw//2+nw//2,Nx//2-nx//2:Nx//2+nx//2]=b_VW  # a=0.004 in all of the pickle files whose a's are not specified.
+    A[Nw//2-nw//2:Nw//2+nw//2,Nx//2-nx//2:Nx//2+nx//2]=a_VW  # 
+    B[Nw//2-nw//2:Nw//2+nw//2,Nx//2-nx//2:Nx//2+nx//2]=b_VW  # 
         
 
     
