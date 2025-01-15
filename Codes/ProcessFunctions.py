@@ -1501,72 +1501,78 @@ def Find_T_X_tau_without_p_input(V_ox,t_ox,V_thresh,L_thresh,t_yr,x_ox,z_ox,L_fa
     V_dip_max=np.max(V_ox,axis=1).T   # Maximum Velocity along the dip
     time1D=np.max(t_ox,axis=(1,2))
     time2D=np.max(t_ox,axis=(1))
-    T1,T2=FindStarts_ends(V_dip_max,time1D,V_thresh)
-    # Here T1 and T2 starts does not look a the spatial distribution
-    TimeStarts=np.array([])
-    TimeEnds=np.array([])
-    Mags=np.array([])
-    for index in range(T1.size):
-        counter,index2,index3,V_isevent,t_ox_filtered=Find_Nevents(V_ox,t_ox,T1[index],T2[index],V_thresh,x_ox,L_thresh)
+    # if all the elements in V_dip_max are less than V_thresh, then there is no event:
+    if np.all(V_dip_max<V_thresh):
+        
+        return np.array([np.nan]),np.array([np.nan]),np.array([np.nan,np.nan,np.nan,np.nan]),np.array([np.nan])
+    else:  
+        T1,T2=FindStarts_ends(V_dip_max,time1D,V_thresh)
+        
+        # Here T1 and T2 starts does not look a the spatial distribution
+        TimeStarts=np.array([])
+        TimeEnds=np.array([])
+        Mags=np.array([])
+        for index in range(T1.size):
+            counter,index2,index3,V_isevent,t_ox_filtered=Find_Nevents(V_ox,t_ox,T1[index],T2[index],V_thresh,x_ox,L_thresh)
 
-        if counter==1: # Only one event in that interval is detected
-            TimeStarts=np.append(TimeStarts,T1[index])
-            TimeEnds=np.append(TimeEnds,T2[index])
-            # Rectangle defined via an anchor point xy and its width and height.
-           
-            # The y of the anchor is the least x_ox that has experienced rupture x_ox[index3]
-            # width is the event duration
-            # height is the event extent x_ox[index2]-x_ox[index3]
+            if counter==1: # Only one event in that interval is detected
+                TimeStarts=np.append(TimeStarts,T1[index])
+                TimeEnds=np.append(TimeEnds,T2[index])
+                # Rectangle defined via an anchor point xy and its width and height.
             
-            index2=int(index2)
-            index3=int(index3)
-            Time_index_start=find_nearest(time1D, T1[index])
-            Time_index_end=find_nearest(time1D, T2[index])
-            # print(Int_V_dy.shape)
-            # print(time2D.shape)
-            # print(Time_index_start)
-            # print(Time_index_end)
-            
-            IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start:Time_index_end+1,:],time2D[Time_index_start:Time_index_end+1,:],axis=0)
-            IntV_dy_dt=IntV_dy_dt[-1]
-            Magnitude=2/3*math.log10(mu*(x_ox[1]-x_ox[0])*np.sum(IntV_dy_dt[index3:index2]))-6
-            Mags=np.append(Mags,Magnitude)
-            #print(Magnitude)
-            # M0=Integration*mu
-            # Mw=np.append(Mw,(2/3)*math.log10(M0)-6)
-            
-            
-            x_anchor=T1[index]/t_yr  # The x of the anchor is time when event start
-            y_anchor=x_ox[index3]/1000-L_fault/2/1000
-            width=(T2[index]-T1[index])/t_yr
-            height=x_ox[index2-1]/1000-x_ox[index3]/1000
-            rectangles=np.append(rectangles,np.array([x_anchor,y_anchor,width,height]),axis=0)
-        else: # More than one event is detected
-            Tstarts,Tends=FindTevents(V_isevent,counter,index2,index3,t_ox_filtered,t_yr)
-            TimeStarts=np.append(TimeStarts,Tstarts)
-            TimeEnds=np.append(TimeEnds,Tends)
-            for index4 in range(counter):
-                # reminder: index3 is the index for the start of event along the strike and index2 is the index for the end of the event along strike
-                # to find the magnitude, I need to find the start, end of event in time ans space, for the direction along the depth I integrate over the entire deep of the fault
-                # The time of the start of the event is Tstarts[index4]:
-                Time_index_start=find_nearest(time1D, Tstarts[index4])
-                # The time of the end of the event is Tends[index4]
-                Time_index_end=find_nearest(time1D, Tends[index4])
-                # The index for the location of the start and end of an event is int(index3[index4])
-                Strike_index_start=int(index3[index4])
-                Strike_index_end=int(index2[index4])
-                IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start-1:Time_index_end+1,:],time2D[Time_index_start-1:Time_index_end+1,:],axis=0)
+                # The y of the anchor is the least x_ox that has experienced rupture x_ox[index3]
+                # width is the event duration
+                # height is the event extent x_ox[index2]-x_ox[index3]
+                
+                index2=int(index2)
+                index3=int(index3)
+                Time_index_start=find_nearest(time1D, T1[index])
+                Time_index_end=find_nearest(time1D, T2[index])
+                # print(Int_V_dy.shape)
+                # print(time2D.shape)
+                # print(Time_index_start)
+                # print(Time_index_end)
+                
+                IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start:Time_index_end+1,:],time2D[Time_index_start:Time_index_end+1,:],axis=0)
                 IntV_dy_dt=IntV_dy_dt[-1]
-                Magnitude=2/3*math.log10(mu*(x_ox[1]-x_ox[0])*np.sum(IntV_dy_dt[Strike_index_start:Strike_index_end]))-6
+                Magnitude=2/3*math.log10(mu*(x_ox[1]-x_ox[0])*np.sum(IntV_dy_dt[index3:index2]))-6
                 Mags=np.append(Mags,Magnitude)
-                x_anchor=Tstarts[index4]/t_yr 
-                y_anchor=x_ox[int(index3[index4])]/1000-L_fault/2/1000
-                width=(Tends[index4]-Tstarts[index4])/t_yr
-                height=x_ox[int(index2[index4])-1]/1000-x_ox[int(index3[index4])]/1000               
+                #print(Magnitude)
+                # M0=Integration*mu
+                # Mw=np.append(Mw,(2/3)*math.log10(M0)-6)
+                
+                
+                x_anchor=T1[index]/t_yr  # The x of the anchor is time when event start
+                y_anchor=x_ox[index3]/1000
+                width=(T2[index]-T1[index])/t_yr
+                height=x_ox[index2-1]/1000-x_ox[index3]/1000
                 rectangles=np.append(rectangles,np.array([x_anchor,y_anchor,width,height]),axis=0)
-                print(Tstarts[index4]/t_yr)
+            else: # More than one event is detected
+                Tstarts,Tends=FindTevents(V_isevent,counter,index2,index3,t_ox_filtered,t_yr)
+                TimeStarts=np.append(TimeStarts,Tstarts)
+                TimeEnds=np.append(TimeEnds,Tends)
+                for index4 in range(counter):
+                    # reminder: index3 is the index for the start of event along the strike and index2 is the index for the end of the event along strike
+                    # to find the magnitude, I need to find the start, end of event in time ans space, for the direction along the depth I integrate over the entire deep of the fault
+                    # The time of the start of the event is Tstarts[index4]:
+                    Time_index_start=find_nearest(time1D, Tstarts[index4])
+                    # The time of the end of the event is Tends[index4]
+                    Time_index_end=find_nearest(time1D, Tends[index4])
+                    # The index for the location of the start and end of an event is int(index3[index4])
+                    Strike_index_start=int(index3[index4])
+                    Strike_index_end=int(index2[index4])
+                    IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start-1:Time_index_end+1,:],time2D[Time_index_start-1:Time_index_end+1,:],axis=0)
+                    IntV_dy_dt=IntV_dy_dt[-1]
+                    Magnitude=2/3*math.log10(mu*(x_ox[1]-x_ox[0])*np.sum(IntV_dy_dt[Strike_index_start:Strike_index_end]))-6
+                    Mags=np.append(Mags,Magnitude)
+                    x_anchor=Tstarts[index4]/t_yr 
+                    y_anchor=x_ox[int(index3[index4])]/1000
+                    width=(Tends[index4]-Tstarts[index4])/t_yr
+                    height=x_ox[int(index2[index4])-1]/1000-x_ox[int(index3[index4])]/1000               
+                    rectangles=np.append(rectangles,np.array([x_anchor,y_anchor,width,height]),axis=0)
+                    print(Tstarts[index4]/t_yr)
 
-    
+        
     return TimeStarts,TimeEnds,rectangles,Mags
 
 
@@ -1574,14 +1580,18 @@ def Find_T_X_tau_without_p_input(V_ox,t_ox,V_thresh,L_thresh,t_yr,x_ox,z_ox,L_fa
 
 def FindStarts_ends(Vxt,time1D,V_thresh):
     
-    V1D=np.max(Vxt,axis=0)  # Time series of maximum slip rate
+    V1D=np.max(Vxt,axis=0)  # Time series of maximum slip rates
     Teventstart=np.array([])
     Teventend=np.array([])
     Teventstart=[time1D[i] for i in range(V1D.size-1) if V1D[i]<V_thresh and V1D[i+1]>V_thresh]
+    if V1D[0]>V_thresh: # If the data already starts from an event, we need to take t_0 as the start time of that event.
+        Teventstart=np.append(time1D[0],Teventstart)
+    
     Teventstart=np.asarray(Teventstart)
     Teventend=[time1D[i] for i in range(V1D.size-1) if V1D[i]>V_thresh and V1D[i+1]<V_thresh]    
     Teventend=np.asarray(Teventend)   
-
+    if Teventstart.size==1 and Teventend.size==0: # If there is only one event and it has not ended yet
+        Teventend=np.append(time1D[-1],Teventend)
     Teventend=Teventend[1:] if Teventstart[0]>Teventend[0] else Teventend # removing the last element of the matrix if the length of T1 is larger than T2
     Teventstart=Teventstart[:-1] if len(Teventstart)!=len(Teventend) else Teventstart # removing the last element of the matrix if the length of T1 is larger than T2
 
