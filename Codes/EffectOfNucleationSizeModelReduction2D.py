@@ -55,7 +55,6 @@ CalculatePOD=0 # if 1 it will calculate the POD, if 0 it will load the POD
 OnlyPostProcess=1
 POD_seperate=1
 downsampleratio=1
-nu=0.25
 L =240e3
 Ploteigenfunctions=1
 #%%
@@ -74,7 +73,7 @@ def forwardmodel(T_final,Ntout,Nxout,Specifyinit,u_init,Drs):
     set_dict["L"] = L
     set_dict["V_PL"] = 50e-3/t_yr  # Plate velocity
     set_dict["VS"] = 3.3*1000          # Shear wave speed
-    set_dict["MU"] = 3e10/(1-nu)          # Shear modulus, IMPORTANT: 1-nu has to be here because we want to study the in plane case
+    set_dict["MU"] = 3e10          # Shear modulus, IMPORTANT: 1-nu has to be here because we want to study the in plane case
     set_dict["SIGMA"] = 50e6       # Effective normal stress [Pa]    
      # Setting some (default) RSF parameter values
     set_dict["SET_DICT_RSF"]["A"] = 1e-2       # Direct effect (will not be overwritten later)
@@ -227,7 +226,7 @@ def forwardmodel(T_final,Ntout,Nxout,Specifyinit,u_init,Drs):
 drs=np.array([6,9,12,15])*0.001
 b=0.015
 a=0.01
-G=3e10/(1-nu) # plane strain
+G=3e10 # plane strain
 sigma=50e6
 L=240e3
 h_ra=2*G*drs*b/(np.pi*sigma*(b-a)**2)
@@ -332,6 +331,10 @@ else:
     axs[1].set_ylim([1e-14,1e4])
     axs[2].set_ylim(bottom=.4,top=1)
     axs[3].set_ylim(bottom=.4,top=1)
+    axs[0].text(100,2e4,'(a)')
+    axs[1].text(100,2e4,'(b)')
+    axs[2].text(2,1.01,'(c)')
+    axs[3].text(2,1.01,'(d)')
     axs[0].set_xlabel(r'$i$')
     axs[1].set_xlabel(r'$i$')
     axs[2].set_xlabel(r'$i$')
@@ -415,6 +418,9 @@ if Ploteigenfunctions==1:
     axs[2].set_ylim(top=0.04)
     axs[1].legend(ncol=4,frameon=False,fontsize=6)
     axs[2].legend(ncol=4,frameon=False,fontsize=6)
+    axs[0].text(-100,-5.3,'(a)')
+    axs[1].text(-100,0.042,'(b)')
+    axs[2].text(-100,0.042,'(c)')
     plt.tight_layout()
     
     plt.savefig('/central/groups/astuart/hkaveh/Figs/ROM/Eq_PODcomponents.png',dpi=300)

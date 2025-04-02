@@ -1484,7 +1484,6 @@ def Find_T_X_tau(p,V_thresh,L_thresh,T_filter,t_yr):
 
     
     return TimeStarts,TimeEnds,rectangles,Mags
-
 def Find_T_X_tau_without_p_input(V_ox,t_ox,V_thresh,L_thresh,t_yr,x_ox,z_ox,L_fault,mu):
   # This progrm is written to find the start of the Events, End of the Events, the extent along Strike (from L1 to L2) and also finding event duration
   # we need dz
@@ -1532,8 +1531,12 @@ def Find_T_X_tau_without_p_input(V_ox,t_ox,V_thresh,L_thresh,t_yr,x_ox,z_ox,L_fa
                 # print(time2D.shape)
                 # print(Time_index_start)
                 # print(Time_index_end)
+                if Time_index_start==0:
+                    IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start:Time_index_end+2,:],time2D[Time_index_start:Time_index_end+2,:],axis=0)
                 
-                IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start:Time_index_end+1,:],time2D[Time_index_start:Time_index_end+1,:],axis=0)
+                else:
+                    IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start-1:Time_index_end+1,:],time2D[Time_index_start-1:Time_index_end+1,:],axis=0)
+                print(IntV_dy_dt.size)
                 IntV_dy_dt=IntV_dy_dt[-1]
                 Magnitude=2/3*math.log10(mu*(x_ox[1]-x_ox[0])*np.sum(IntV_dy_dt[index3:index2]))-6
                 Mags=np.append(Mags,Magnitude)
@@ -1561,7 +1564,16 @@ def Find_T_X_tau_without_p_input(V_ox,t_ox,V_thresh,L_thresh,t_yr,x_ox,z_ox,L_fa
                     # The index for the location of the start and end of an event is int(index3[index4])
                     Strike_index_start=int(index3[index4])
                     Strike_index_end=int(index2[index4])
-                    IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start-1:Time_index_end+1,:],time2D[Time_index_start-1:Time_index_end+1,:],axis=0)
+                    # print(Int_V_dy.shape)
+                    # print(time2D.shape)
+                    # print(Time_index_start)
+                    # print(Time_index_end)
+                    # print(Int_V_dy.shape)
+                    # print(time2D.shape)
+                    if Time_index_start==0:
+                        IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start:Time_index_end+1,:],time2D[Time_index_start:Time_index_end+1,:],axis=0)
+                    else:
+                        IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start-1:Time_index_end+1,:],time2D[Time_index_start-1:Time_index_end+1,:],axis=0)
                     IntV_dy_dt=IntV_dy_dt[-1]
                     Magnitude=2/3*math.log10(mu*(x_ox[1]-x_ox[0])*np.sum(IntV_dy_dt[Strike_index_start:Strike_index_end]))-6
                     Mags=np.append(Mags,Magnitude)
