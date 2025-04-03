@@ -1957,7 +1957,7 @@ def Plot_P_ee(f,g,bins,f_e,string):
 
 
 
-
+ 
 #%%
 def PlotStressBeforeEQ(p,V_thresh,t_yr,T_filter,L,W,V_PL):
     Mw,T1,T2=FindMw(p,V_thresh,t_yr,T_filter)
@@ -2331,7 +2331,7 @@ def Mw_AreaScalingPlt(p,L,W,t_yr,T_filter,V_thresh):
     return
 
 #%% POD Function
-def ApplyPODV_2D(v,theta,t,Nx,T_filter,v_or_theta,downsampleratio,N_snapshots):
+def ApplyPODV_2D(v,theta,t,Nx,T_filter,v_or_theta,downsampleratio,N_snapshots,specify_N_snapshots=True):
 
     t_yr=cte.t_yr   
     Nt=int(t.shape[0]/Nx)
@@ -2365,7 +2365,8 @@ def ApplyPODV_2D(v,theta,t,Nx,T_filter,v_or_theta,downsampleratio,N_snapshots):
     p=0
     P=np.asarray(P).T     
     # only considering firstt N_snapshots in P
-    P=P[:,:N_snapshots]
+    if specify_N_snapshots==True:
+        P=P[:,:N_snapshots]
     P_bar=np.mean(P,axis=1)
     P_bar=P_bar.reshape(Nx,1)
     P=P-P_bar
