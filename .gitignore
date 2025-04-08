@@ -6,3 +6,4 @@ output_*
 slurm*
 *.pyc
 *.html
+/earthquake/outputs/*
