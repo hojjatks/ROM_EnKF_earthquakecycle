@@ -2142,11 +2142,11 @@ def PlotStressBeforeEQ(p,V_thresh,t_yr,T_filter,L,W,V_PL):
     return
 
 #%% Find GR distribution
-def Gut(Mw):
+def Gut(Mw,NpointsM=30):
     CumNumber=np.array([])
     c1=np.min(Mw)
     c2=np.max(Mw)-.0001 # To remove log10(0) error
-    c=np.linspace(c1,c2,30)
+    c=np.linspace(c1,c2,NpointsM)
     for i in range(c.size):
         CumNumber=np.append(CumNumber,(sum(j > c[i] for j in Mw)))
     return c,CumNumber   
@@ -3007,6 +3007,40 @@ def ApplyPODtheta(p,T_filter):
 
 
 
+def ApplyPODStateSpace2D(v,theta,t,T_filter,Nx):
+    # Importing Data
+    t_yr=cte.t_yr
+    Nt=len(v)//(Nx)    
+    V_ox=v.reshape((Nt,Nx))
+    theta_ox=theta.reshape((Nt,Nx))
+    t_ox=t.reshape((Nt,Nx))
+    V_ox_filtered=V_ox[t_ox[:,0]>T_filter*t_yr,:]
+    t_ox_filtered=t_ox[t_ox[:,0]>T_filter*t_yr,:]
+    theta_ox_filtered=theta_ox[t_ox[:,0]>T_filter*t_yr,:]
+
+
+    t_ox_filtered=np.asarray(t_ox_filtered) 
+    V_ox_filtered=np.asarray(V_ox_filtered) # Filtered out first T_filter years
+    Theta_filtered=np.asarray(theta_ox_filtered)
+
+    V_ox_filtered=np.log10(V_ox_filtered)   # Finding the Logarithm of Velocity
+    Theta_filtered=np.log10(Theta_filtered)
+    
+    Nt2=V_ox_filtered.shape[0]
+    print(Nt2)
+      
+    u=[V_ox_filtered[i,:].flatten() for i in range(Nt2)]
+    u=np.asarray(u).T 
+    w=[Theta_filtered[i,:].flatten() for i in range(Nt2)]
+    w=np.asarray(w).T
+    q=np.concatenate((u,w),axis=0)
+    q_bar=np.mean(q,axis=1)
+    q_bar=q_bar.reshape(2*Nx,1)
+    P=q-q_bar
+    U,S,VT=np.linalg.svd(P,full_matrices='false')   
+    
+    S=np.diag(S) 
+    return U,S,VT,q_bar
 
 
 def ApplyPODStateSpace(p,T_filter,V_thresh):
