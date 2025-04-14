@@ -55,7 +55,7 @@ def forwardmodel(T_final,Ntout,Nxout,Specifyinit,u_init,Drs):
      # Lasp *= Lc
      # Fault length [m]
     N = int(np.power(2, np.ceil(np.log2(resolution * L / Lb))))
-    
+    print("Number of elements",N)
      # Spatial coordinate for mesh
     x = np.linspace(-L/2, L/2, N, dtype=float)
     
@@ -96,8 +96,9 @@ def forwardmodel(T_final,Ntout,Nxout,Specifyinit,u_init,Drs):
                 
     p.mesh_dict["B"] = b_list
     if Specifyinit==True:
-        v_init=u_init[0]
-        theta_init=u_init[1]
+        Nx=u_init.shape[0]//2
+        v_init=u_init[:Nx]
+        theta_init=u_init[Nx:]
         p.mesh_dict["V_0"] = 10**(v_init)
         p.mesh_dict["TH_0"] = 10**(theta_init)
     else:
