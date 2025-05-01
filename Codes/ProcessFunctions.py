@@ -2331,6 +2331,34 @@ def Mw_AreaScalingPlt(p,L,W,t_yr,T_filter,V_thresh):
     return
 
 #%% POD Function
+def FindNt(v,theta,t,Nx,T_filter,v_or_theta,downsampleratio,N_snapshots,specify_N_snapshots=True):
+
+    t_yr=cte.t_yr   
+    Nt=int(t.shape[0]/Nx)
+
+# remove first T_filter years from V_ox, slip and t
+    t=t.reshape((Nt,Nx)) 
+    
+    v=v.reshape((Nt,Nx))
+    theta=theta.reshape((Nt,Nx))
+    
+    V_ox_filtered=v[t[:,0]>T_filter*t_yr,:]
+    t_ox_filtered=t[t[:,0]>T_filter*t_yr]
+    theta_ox_filtered=theta[t[:,0]>T_filter*t_yr,:]
+    
+    
+    
+    # downsampling data in time
+    V_ox_filtered=V_ox_filtered[::downsampleratio,:]
+    t_ox_filtered=t_ox_filtered[::downsampleratio]
+    theta_ox_filtered=theta_ox_filtered[::downsampleratio,:]
+    
+    V_ox_filtered=np.log10(V_ox_filtered)   # Finding the Logarithm of Velocity
+    theta_ox_filtered=np.log10(theta_ox_filtered)
+
+    Nt2=V_ox_filtered.shape[0]
+    return Nt2
+
 def ApplyPODV_2D(v,theta,t,Nx,T_filter,v_or_theta,downsampleratio,N_snapshots,specify_N_snapshots=True):
 
     t_yr=cte.t_yr   
