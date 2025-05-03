@@ -21,11 +21,11 @@ T_final_load=10500
 ApplyPOD=False             # True if you want to apply POD, 0 if you want to load the data
 Nxout=cte_eq.Nxout
 Ntout=cte_eq.Ntout
-T_filter=7500 
+T_filter=7000 
 
 #%%
 if ApplyPOD:
-    direct='/central/groups/astuart/hkaveh/Data/LearnROM/transfer/2DSim_MainSimulation_Tf'+str(T_final_load)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs)+".npz"
+    direct='/central/groups/Avouac_lab/hkaveh/Data/LearnROM/2D/2DSim_MainSimulation_Tf'+str(T_final_load)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs)+".npz"
     data=np.load(direct)
     v=data['v']
     theta=data['theta']
@@ -36,10 +36,10 @@ if ApplyPOD:
 
     U,S,VT,q_bar=ApplyPODStateSpace2D(v,theta,t,T_filter,Nx)
     # saving U,S,VT,q_bar to later use in if ApplyPOD==0
-    np.savez('/central/groups/astuart/hkaveh/Data/LearnROM/transfer/ApplyPOD_V_theta_together'+str(T_final_load)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs),U=U,S=S,VT=VT,q_bar=q_bar)
+    np.savez('/central/groups/Avouac_lab/hkaveh/Data/LearnROM/2D/ApplyPOD_V_theta_together'+str(T_final_load)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs),U=U,S=S,VT=VT,q_bar=q_bar)
 else:
     # load U,S,VT,q_bar
-    data=np.load('/central/groups/astuart/hkaveh/Data/LearnROM/transfer/ApplyPOD_V_theta_together'+str(T_final_load)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs)+'.npz')
+    data=np.load('/central/groups/Avouac_lab/hkaveh/Data/LearnROM/2D/ApplyPOD_V_theta_together'+str(T_final_load)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs)+'.npz')
     U=data['U']
     S=data['S']
     VT=data['VT']
@@ -93,7 +93,7 @@ u_init_highres = np.vstack([v_init_highres, theta_init_highres])
 #%%
 p=forwardmodel(T_final_run,cte_eq.Ntout,cte_eq.Nxout,Specifyinit,u_init_highres,drs)
 #%%
-direct='/central/groups/astuart/hkaveh/Data/LearnROM/transfer/SampleSimulation_Tf_2D'+str(T_final_run)+"Nt="+str(cte_eq.Ntout)+"N_m"+str(N_m)+"coeff"+str(coeff)+"number"+str(index)
+direct='/central/groups/Avouac_lab/hkaveh/Data/LearnROM/2D/SampleSimulation_Tf_2D'+str(T_final_run)+"Nt="+str(cte_eq.Ntout)+"N_m"+str(N_m)+"coeff"+str(coeff)+"number"+str(index)
 # You only need time, V, theta:
 x_ox=p.ox["x"].unique()
 Nt=len(p.ox["v"])//(len(x_ox)) # Number of Snapshots
