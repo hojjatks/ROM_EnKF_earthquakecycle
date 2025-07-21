@@ -12,6 +12,8 @@ Created on Tue Oct 29 16:08:28 2024
 """
 
 #%%
+import sys
+sys.path.append('../.')
 import matplotlib
 import sys
 import matplotlib.font_manager as fm
@@ -26,6 +28,7 @@ import matplotlib.animation as animation
 import numpy as np
 import pickle
 # import ProcessFunctions
+from Forward2d import forwardmodel
 
 import sys
 from numpy import random
@@ -41,7 +44,6 @@ from ProcessFunctions import GenRandom_ai,FindInitFromAi
 sys.path.append('/central/groups/astuart/hkaveh/QDYN/qdyn-read-only/src')  # For pyqdyn
 
 from pyqdyn import qdyn
-from forward2d import forwardmodel
 #%%
 # Instantiate the QDYN class object
 
@@ -68,7 +70,7 @@ norm = mcolors.Normalize(vmin=min(Ins_ratio), vmax=max(Ins_ratio))  # Normalize 
 
 Ntout=cte_eq.Ntout
 Nxout=cte_eq.Nxout
-
+#%%
 
 
 if OnlyPostProcess==0:
@@ -107,7 +109,7 @@ else:
     cax1 = fig.add_subplot(gs[2,:])  # Colorbar subplot spanning all rows
 
     for i in range(np.size(drs)):
-        direct='/central/groups/astuart/hkaveh/Data/LearnROM/transfer/2DSim_MainSimulation_Tf'+str(T_final)+"Nt="+str(Ntout)+'drs'+str(drs[i])+".npz"
+        direct='/central/groups/astuart/hkaveh/Data/LearnROM/transfer/2DSim_MainSimulation_Tf'+str(T_final)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs[i])+".npz"
         data=np.load(direct)
         v=data["v"]
         theta=data["theta"]
@@ -115,7 +117,7 @@ else:
         slip=data["slip"]
         t=data["t"]
         a=data["a"]
-        Nx=int(a.shape[0]//2)
+        Nx=int(a.shape[0]//Nxout)
 # #%%
         #qdyn_plot.slip_profile(p.ox, warm_up=1000*t_yr)
         T_filter=400 # years, remove everything before this year.
@@ -159,8 +161,8 @@ else:
 
 
 
-    axs[0].set_xlim([1,3000])
-    axs[1].set_xlim([1,3000])
+    axs[0].set_xlim([1,2000])
+    axs[1].set_xlim([1,2000])
     axs[0].set_ylim([1e-14,1e4])
     axs[1].set_ylim([1e-14,1e4])
     axs[2].set_ylim(bottom=.4,top=1)
@@ -175,8 +177,8 @@ else:
     axs[3].set_xlabel(r'$i$')
     axs[0].set_ylabel(r'$\lambda_i^{v}$')
     axs[1].set_ylabel(r'$\lambda_i^{\theta}$')
-    axs[2].set_ylabel(r'$\sum_{j=1}^i\lambda_i^{v}/\sum_{j=1}^m\lambda_i^{v}$')
-    axs[3].set_ylabel(r'$\sum_{j=1}^i\lambda_i^{\theta}/\sum_{j=1}^m\lambda_i^{\theta}$')
+    axs[2].set_ylabel(r'$\sum_{j=1}^i\lambda_i^{v}/\sum_{j=1}^l\lambda_i^{v}$')
+    axs[3].set_ylabel(r'$\sum_{j=1}^i\lambda_i^{\theta}/\sum_{j=1}^l\lambda_i^{\theta}$')
 
 
 
@@ -195,14 +197,14 @@ else:
     cbar = plt.colorbar(sm, cax=cax1, orientation='horizontal')
     cbar.set_label('Instability ratio')  # Label for the colorbar
     plt.tight_layout()
-    plt.savefig('/central/groups/astuart/hkaveh/Figs/ROM/POD_SingularValues2.png',dpi=300)
+    plt.savefig('/central/groups/astuart/hkaveh/Figs/ROM/POD_SingularValues_vfinal.png',dpi=300)
     plt.show()
 
 # #%%
 
 if Ploteigenfunctions==1:
-    i=1 # plot eigenfunctinos for i=1
-    direct='/central/groups/astuart/hkaveh/Data/LearnROM/transfer/2DSim_MainSimulation_Tf'+str(T_final)+"Nt="+str(Ntout)+'drs'+str(drs[i])+".npz"
+    i=2 # plot eigenfunctinos for i=1
+    direct='/central/groups/astuart/hkaveh/Data/LearnROM/transfer/2DSim_MainSimulation_Tf'+str(T_final)+"Nx="+str(Nxout)+"Nt="+str(Ntout)+'drs'+str(drs[i])+".npz"
     data=np.load(direct)
     v=data["v"]
     theta=data["theta"]
@@ -248,16 +250,16 @@ if Ploteigenfunctions==1:
 
         axs[1].plot(x_grid,Data_V["U"][:,i],label="$i={}$".format(i+1))
         axs[2].plot(x_grid,Data_theta["U"][:,i],label="$i={}$".format(i+1))
-    axs[1].set_ylim(top=0.04)
-    axs[2].set_ylim(top=0.04)
+    axs[1].set_ylim(top=0.07)
+    axs[2].set_ylim(top=0.07)
     axs[1].legend(ncol=4,frameon=False,fontsize=6)
     axs[2].legend(ncol=4,frameon=False,fontsize=6)
-    axs[0].text(-100,-5.3,'(a)')
-    axs[1].text(-100,0.042,'(b)')
-    axs[2].text(-100,0.042,'(c)')
+    axs[0].text(-100,-5.7,'(a)')
+    axs[1].text(-100,0.072,'(b)')
+    axs[2].text(-100,0.072,'(c)')
     plt.tight_layout()
     
-    plt.savefig('/central/groups/astuart/hkaveh/Figs/ROM/Eq_PODcomponents.png',dpi=300)
+    plt.savefig('/central/groups/astuart/hkaveh/Figs/ROM/Eq_PODcomponents_vfinal.png',dpi=300)
 
 
 # #%%

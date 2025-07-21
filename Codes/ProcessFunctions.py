@@ -1571,8 +1571,8 @@ def Find_T_X_tau_without_p_input(V_ox,t_ox,V_thresh,L_thresh,t_yr,x_ox,z_ox,L_fa
                     # print(Int_V_dy.shape)
                     # print(time2D.shape)
                     if Time_index_start==0:
-                        IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start:Time_index_end+1,:],time2D[Time_index_start:Time_index_end+1,:],axis=0)
-                    else:
+                        IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start:Time_index_end+2,:],time2D[Time_index_start:Time_index_end+2,:],axis=0)
+                    else: 
                         IntV_dy_dt=integrate.cumtrapz(Int_V_dy[Time_index_start-1:Time_index_end+1,:],time2D[Time_index_start-1:Time_index_end+1,:],axis=0)
                     IntV_dy_dt=IntV_dy_dt[-1]
                     Magnitude=2/3*math.log10(mu*(x_ox[1]-x_ox[0])*np.sum(IntV_dy_dt[Strike_index_start:Strike_index_end]))-6
